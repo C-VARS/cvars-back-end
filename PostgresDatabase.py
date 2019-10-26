@@ -32,6 +32,9 @@ class PostgresDatabase(DatabaseInterface):
         return "Oopsies"
 
     def attempt_login(self, username: str, user_password: str):
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT * FROM Users where blahbalh")
+
         return "Oopsies"
 
     def get_order_information(self, username: str):
