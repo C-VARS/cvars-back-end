@@ -29,32 +29,41 @@ class PostgresDatabase(DatabaseInterface):
         return "Oopsies"
 
     def create_user(self, username: str, user_password: str, user_type: str):
+        """Create a user with <username>, <user_password>, <user_type>.
+        Return JSON with different signUpStatus:
+            - duplicate username --> "Username exists"
+            - not valid type --> "Not a valid user type"
+            - signed up --> "Signup successful"
+        """
         cursor = self.connection.cursor()
         cursor.execute("""SELECT username
                        FROM loginInfo WHERE username = %s""", (username,))
         result = cursor.fetchall()
 
         if not len(result) == 0:
-            return {"signUpStatus": False}
+            return {"signUpStatus": "Username exists"}
         else:
             valid_type = ["Driver", "Customer", "Supplier"]
             if user_type not in valid_type:
-                return {"signUpStatus": False}
+                return {"signUpStatus": "Not a valid user type"}
 
             cursor.execute("""INSERT INTO loginInfo VALUES (%s, %s, %s)""", (
                 username, user_password, user_type
             ))
             self.connection.commit()
-            return {"signUpStatus": True}
+            return {"signUpStatus": "Signup successful"}
 
     def attempt_login(self, username: str, password: str):
+        """Return a JSON indicating if a login attempt was successful with
+        given <username> and <password>.
+        """
         cursor = self.connection.cursor()
         cursor.execute("""SELECT username, password, usertype 
                        FROM loginInfo WHERE username = %s""",
                        (username,))
         result = cursor.fetchone()
 
-        if result is None or len(result) == 0:
+        if result is None:
             return {"loginAttempt": False}
         elif result[1] == password:
             return {"loginAttempt": True,
