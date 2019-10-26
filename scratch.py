@@ -1,4 +1,6 @@
 from flask import jsonify
+
+
 class DatabaseInterface:
     """An abstract interface for interaction with a database implementation
     """
@@ -10,7 +12,9 @@ class DatabaseInterface:
 
     def attempt_login(self, username: str, password: str):
         cursor = self.execute.cursor()
-        cursor.exectue("SELECT username, password, user_type FROM login_info WHERE username = %", (username,))
+        cursor.exectue("""SELECT username, password, usertype 
+                       FROM loginInfo WHERE username = %""",
+                       (username,))
         result = cursor.fetchone()
 
         if result is None:
@@ -18,7 +22,7 @@ class DatabaseInterface:
 
         elif result[1] == password:
             return jsonify({"loginAttempt": True,
-                            "UserType": result[3]})
+                            "usertype": result[3]})
 
     def get_order_information(self, username: str):
         raise NotImplementedError
