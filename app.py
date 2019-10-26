@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, request
+from DatabaseInterface as db
 
 app = Flask(__name__)
 
@@ -10,3 +11,20 @@ def index():
     :return: str
     """
     return "Just testing"
+
+# login
+@app.route("/users/login")
+def login():
+    """
+    Login this user
+    :return: json
+    """
+    username = request.args.get('username')
+    password = request.args.get('password')
+
+    return db.attempt_login(username, password)
+
+
+
+
+
