@@ -1,6 +1,5 @@
 import os
 
-from flask import jsonify
 from DatabaseInitializer import DatabaseInitializer
 from DatabaseInterface import DatabaseInterface
 import psycopg2
@@ -32,12 +31,21 @@ class PostgresDatabase(DatabaseInterface):
     def create_user(self, username: str, user_password: str, user_type: str):
         cursor = self.connection.cursor()
         cursor.execute("""SELECT username
-                       FROM loginInfo WHERE username = %s""")
+                       FROM loginInfo WHERE username = %s""", (username,))
         result = cursor.fetchall()
-        if username in result:
-            return {"signupstatus": False}
+
+        if not len(result) == 0:
+            return {"signUpStatus": False}
         else:
-            return {"signupstatus": True}
+            valid_type = ["Driver", "Customer", "Supplier"]
+            if user_type not in valid_type:
+                return {"signUpStatus": False}
+
+            cursor.execute("""INSERT INTO loginInfo VALUES (%s, %s, %s)""", (
+                username, user_password, user_type
+            ))
+            self.connection.commit()
+            return {"signUpStatus": True}
 
     def attempt_login(self, username: str, password: str):
         cursor = self.connection.cursor()
@@ -46,12 +54,13 @@ class PostgresDatabase(DatabaseInterface):
                        (username,))
         result = cursor.fetchone()
 
-        if len(result) == 0:
-            return jsonify({"loginAttempt": False})
-
+        if result is None or len(result) == 0:
+            return {"loginAttempt": False}
         elif result[1] == password:
-            return jsonify({"loginAttempt": True,
-                            "usertype": result[3]})
+            return {"loginAttempt": True,
+                            "usertype": result[2]}
+        else:
+            return {"loginAttempt": False}
 
     def get_order_information(self, username: str):
         return "Oopsies"

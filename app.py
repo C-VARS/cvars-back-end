@@ -1,7 +1,8 @@
-from flask import Flask, request
-import DatabaseInterface as db
+from flask import Flask, request, jsonify
+import DatabaseInterface, PostgresDatabase
 
 app = Flask(__name__)
+db = PostgresDatabase.PostgresDatabase()
 
 # root
 @app.route("/")
@@ -22,7 +23,10 @@ def login():
     username = request.args.get('username')
     password = request.args.get('password')
 
-    return db.attempt_login(username, password)
+    return jsonify(db.attempt_login(username, password))
+
+if __name__ == '__main__':
+    app.run()
 
 
 
