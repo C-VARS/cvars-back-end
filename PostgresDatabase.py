@@ -6,6 +6,7 @@ from DatabaseInterface import DatabaseInterface
 import psycopg2
 
 testing = True
+
 DATABASE_URL = os.environ.get("DATABASE_URL", "None")
 
 
@@ -29,11 +30,18 @@ class PostgresDatabase(DatabaseInterface):
         return "Oopsies"
 
     def create_user(self, username: str, user_password: str, user_type: str):
-        return "Oopsies"
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT username
+                       FROM loginInfo WHERE username = %s""")
+        result = cursor.fetchall()
+        if username in result:
+            return {"signupstatus": False}
+        else:
+            return {"signupstatus": True}
 
     def attempt_login(self, username: str, password: str):
         cursor = self.connection.cursor()
-        cursor.exectue("""SELECT username, password, usertype 
+        cursor.execute("""SELECT username, password, usertype 
                        FROM loginInfo WHERE username = %s""",
                        (username,))
         result = cursor.fetchone()
