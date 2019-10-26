@@ -6,7 +6,6 @@ from DatabaseInterface import DatabaseInterface
 import psycopg2
 
 testing = True
-
 DATABASE_URL = os.environ.get("DATABASE_URL", "None")
 
 
@@ -35,11 +34,11 @@ class PostgresDatabase(DatabaseInterface):
     def attempt_login(self, username: str, password: str):
         cursor = self.connection.cursor()
         cursor.exectue("""SELECT username, password, usertype 
-                       FROM loginInfo WHERE username = %""",
+                       FROM loginInfo WHERE username = %s""",
                        (username,))
         result = cursor.fetchone()
 
-        if result is None:
+        if len(result) == 0:
             return jsonify({"loginAttempt": False})
 
         elif result[1] == password:
