@@ -1,3 +1,4 @@
+from flask import jsonify
 class DatabaseInterface:
     """An abstract interface for interaction with a database implementation
     """
@@ -7,7 +8,17 @@ class DatabaseInterface:
     def create_user(self, username: str, user_password: str, user_type: str):
         raise NotImplementedError
 
-    def attempt_login(self, username: str, user_password: str):
+    def attempt_login(self, username: str, password: str):
+        cursor = self.execute.cursor()
+        cursor.exectue("SELECT username, password, user_type FROM login_info WHERE username = %", (username,))
+        result = cursor.fetchone()
+
+        if result is None:
+            return jsonify({"loginAttempt": False})
+
+        elif result[1] == password:
+            return jsonify({"loginAttempt": True,
+                            "UserType": result[3]})
 
     def get_order_information(self, username: str):
         raise NotImplementedError
