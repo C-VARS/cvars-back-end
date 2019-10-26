@@ -8,9 +8,6 @@ class DatabaseInterface:
         raise NotImplementedError
 
     def attempt_login(self, username: str, user_password: str):
-        # If username & pass are a valid pair
-        # login = (T/F)
-        return (username, pass, type)
 
     def get_order_information(self, username: str):
         raise NotImplementedError
