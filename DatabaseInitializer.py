@@ -1,5 +1,6 @@
 import psycopg2
 
+
 class DatabaseInitializer:
 
     def __init__(self, connection):
@@ -89,12 +90,13 @@ class DatabaseInitializer:
             cursor.exectue("SELECT * FROM Orders LIMIT 1")
         except:
             self.connection.rollback()
-            cursor.exectue("""CREATE TABLE Items (
+            cursor.exectue("""CREATE TABLE Orders (
                     item varchar(255),
                     price FLOAT,
                     amount INT,
                     invoiceID int references Invoices(invoiceID)
                     """)
+            self.connection.commit()
 
     def initialize(self):
         self.initialize_login_info()
@@ -103,5 +105,3 @@ class DatabaseInitializer:
         self.initialize_suppliers()
         self.initialize_invoices()
         self.initialize_orders()
-
-
