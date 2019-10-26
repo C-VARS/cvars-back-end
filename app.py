@@ -1,5 +1,5 @@
 from flask import Flask, request
-from DatabaseInterface as db
+import DatabaseInterface as db
 
 app = Flask(__name__)
 
