@@ -1,5 +1,6 @@
 import os
 
+from flask import jsonify
 from DatabaseInitializer import DatabaseInitializer
 from DatabaseInterface import DatabaseInterface
 import psycopg2
@@ -31,11 +32,19 @@ class PostgresDatabase(DatabaseInterface):
     def create_user(self, username: str, user_password: str, user_type: str):
         return "Oopsies"
 
-    def attempt_login(self, username: str, user_password: str):
+    def attempt_login(self, username: str, password: str):
         cursor = self.connection.cursor()
-        cursor.execute("SELECT * FROM Users where blahbalh")
+        cursor.exectue("""SELECT username, password, usertype 
+                       FROM loginInfo WHERE username = %""",
+                       (username,))
+        result = cursor.fetchone()
 
-        return "Oopsies"
+        if result is None:
+            return jsonify({"loginAttempt": False})
+
+        elif result[1] == password:
+            return jsonify({"loginAttempt": True,
+                            "usertype": result[3]})
 
     def get_order_information(self, username: str):
         return "Oopsies"
