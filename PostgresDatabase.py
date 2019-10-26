@@ -3,7 +3,7 @@ import os
 from DatabaseInterface import DatabaseInterface
 import psycopg2
 
-testing = False
+testing = True
 DATABASE_URL = os.environ['DATABASE_URL']
 
 
@@ -42,3 +42,6 @@ class PostgresDatabase(DatabaseInterface):
 
     def confirm_payment(self, invoice_id: int):
         return "Oopsies"
+
+    def initialize(self):
+        return "Oppsies"

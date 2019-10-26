@@ -22,3 +22,6 @@ class DatabaseInterface:
     def confirm_payment(self, invoice_id: int):
         raise NotImplementedError
 
+    def initialize(self):
+        raise NotImplementedError
+
