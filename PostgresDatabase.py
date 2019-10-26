@@ -1,10 +1,12 @@
 import os
 
+from DatabaseInitializer import DatabaseInitializer
 from DatabaseInterface import DatabaseInterface
 import psycopg2
 
 testing = True
-DATABASE_URL = os.environ['DATABASE_URL']
+
+DATABASE_URL = os.environ.get("DATABASE_URL", "None")
 
 
 class PostgresDatabase(DatabaseInterface):
@@ -14,12 +16,13 @@ class PostgresDatabase(DatabaseInterface):
             if testing:
                 self.connection = psycopg2.connect(host="localhost",
                                                    user="postgres",
-                                              password="alexyang0204",
-                                              dbname="postgres")
+                                                   password="alexyang0204",
+                                                   dbname="postgres")
             else:
                 self.connection = psycopg2.connect(DATABASE_URL,
                                                    sslmode='require')
-        except:
+            self.initialize()
+        except psycopg2.OperationalError as e:
             print("Something happened rip")
 
     def create_invoice(self, json):
@@ -44,4 +47,7 @@ class PostgresDatabase(DatabaseInterface):
         return "Oopsies"
 
     def initialize(self):
-        return "Oppsies"
+        initializer = DatabaseInitializer(self.connection)
+        initializer.initialize()
+
+
