@@ -4,8 +4,6 @@ from DatabaseInitializer import DatabaseInitializer
 from DatabaseInterface import DatabaseInterface
 import psycopg2
 
-testing = True
-
 DATABASE_URL = os.environ.get("DATABASE_URL", "None")
 
 
@@ -13,7 +11,7 @@ class PostgresDatabase(DatabaseInterface):
 
     def __init__(self):
         try:
-            if testing:
+            if DATABASE_URL == "None":
                 self.connection = psycopg2.connect(host="localhost",
                                                    user="postgres",
                                                    password="alexyang0204",
@@ -23,35 +21,19 @@ class PostgresDatabase(DatabaseInterface):
                                                    sslmode='require')
             self.initialize()
         except psycopg2.OperationalError as e:
-            print("Something happened rip")
+            print("Something happened rip" + e.pgerror)
 
     def create_invoice(self, json):
         return "Oopsies"
 
-    def create_user(self, username: str, user_password: str, user_type: str):
+    def register_user(self, user_info):
         """Create a user with <username>, <user_password>, <user_type>.
         Return JSON with different signUpStatus:
             - duplicate username --> "Username exists"
             - not valid type --> "Not a valid user type"
             - signed up --> "Signup successful"
         """
-        cursor = self.connection.cursor()
-        cursor.execute("""SELECT username
-                       FROM loginInfo WHERE username = %s""", (username,))
-        result = cursor.fetchall()
-
-        if not len(result) == 0:
-            return {"signUpStatus": "Username exists"}
-        else:
-            valid_type = ["Driver", "Customer", "Supplier"]
-            if user_type not in valid_type:
-                return {"signUpStatus": "Not a valid user type"}
-
-            cursor.execute("""INSERT INTO loginInfo VALUES (%s, %s, %s)""", (
-                username, user_password, user_type
-            ))
-            self.connection.commit()
-            return {"signUpStatus": "Signup successful"}
+        return "blopp"
 
     def attempt_login(self, username: str, password: str):
         """Return a JSON indicating if a login attempt was successful with
@@ -64,12 +46,12 @@ class PostgresDatabase(DatabaseInterface):
         result = cursor.fetchone()
 
         if result is None:
-            return {"loginAttempt": False}
+            return {"loginStatus": False}
         elif result[1] == password:
-            return {"loginAttempt": True,
+            return {"loginStatus": True,
                             "usertype": result[2]}
         else:
-            return {"loginAttempt": False}
+            return {"loginStatus": False}
 
     def get_order_information(self, username: str):
         return "Oopsies"
@@ -86,5 +68,29 @@ class PostgresDatabase(DatabaseInterface):
     def initialize(self):
         initializer = DatabaseInitializer(self.connection)
         initializer.initialize()
+
+        cursor = self.connection.cursor()
+
+        cursor.execute("SELECT * From loginInfo")
+
+        if len(cursor.fetchall()) == 0:
+
+            cursor.execute("""INSERT INTO loginInfo VALUES 
+            ('Callum', 'callum12345', 'Driver')""")
+
+            cursor.execute("""INSERT INTO loginInfo VALUES 
+            ('Vlad', 'vlad12345', 'Customer')""")
+
+            cursor.execute("""INSERT INTO loginInfo VALUES 
+            ('Alex', 'alex12345', 'Driver')""")
+
+            cursor.execute("""INSERT INTO loginInfo VALUES 
+            ('Raag', 'raag12345', 'Customer')""")
+
+            cursor.execute("""INSERT INTO loginInfo VALUES 
+            ('Sophie', 'sophie12345', 'Supplier')""")
+
+            self.connection.commit()
+
 
 

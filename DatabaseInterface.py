@@ -4,7 +4,7 @@ class DatabaseInterface:
     def create_invoice(self, json):
         raise NotImplementedError
 
-    def create_user(self, username: str, user_password: str, user_type: str):
+    def register_user(self, user_info):
         raise NotImplementedError
 
     def attempt_login(self, username: str, user_password: str):
