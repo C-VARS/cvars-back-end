@@ -1,7 +1,8 @@
 class DatabaseInterface:
     """An abstract interface for interaction with a database implementation
     """
-    def create_invoice(self, json):
+
+    def create_invoice(self, invoice_info):
         raise NotImplementedError
 
     def register_user(self, user_info):

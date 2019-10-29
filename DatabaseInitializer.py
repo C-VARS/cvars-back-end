@@ -17,7 +17,7 @@ class DatabaseInitializer:
             cursor.execute("""CREATE TABLE LoginInfo (
                     username varchar(20) NOT NULL PRIMARY KEY, 
                     password varchar(25) NOT NULL, 
-                    usertype varchar(20))""")
+                    userType varchar(20))""")
             self.connection.commit()
 
     def initialize_customers(self):

@@ -3,6 +3,7 @@ import os
 from DatabaseInitializer import DatabaseInitializer
 from DatabaseInterface import DatabaseInterface
 import psycopg2
+import json
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "None")
 
@@ -23,24 +24,102 @@ class PostgresDatabase(DatabaseInterface):
         except psycopg2.OperationalError as e:
             print("Something happened rip" + e.pgerror)
 
-    def create_invoice(self, json):
+    def create_invoice(self, invoice_info):
         return "Oopsies"
 
+    def check_valid_invoice_input(self, invoice_info):
+        return "blop"
+
     def register_user(self, user_info):
-        """Create a user with <username>, <user_password>, <user_type>.
-        Return JSON with different signUpStatus:
+        """Create a user with the given field contained in the JSON parameter
+        Return the error message defined in check_valid_register_input if the
+        JSON information is invalid.
+        """
+        error_check_message = self.check_valid_register_input(user_info)
+        if error_check_message is not None:
+            return error_check_message
+
+        self.connection.rollback()
+        cursor = self.connection.cursor()
+
+        cursor.execute("""INSERT INTO loginInfo VALUES(%s, %s, %s)""",
+                       (user_info['username'], user_info['password'],
+                        user_info['userType']))
+        if user_info['userType'] == 'Driver':
+            cursor.execute("""INSERT INTO Drivers VALUES (
+            %s, %s, %s)""", (user_info['username'], user_info['name'],
+                             user_info['contact']))
+        elif user_info['userType'] == 'Customer':
+            cursor.execute("""INSERT INTO Customers VALUES (
+            %s, %s, %s, %s, %s)""", (user_info['username'], user_info['name'],
+                                     user_info['bankInformation'],
+                                     user_info['address'],
+                                     user_info['contact']))
+        elif user_info['userType'] == 'Supplier':
+            cursor.execute("""INSERT INTO Suppliers VALUES (
+            %s, %s, %s, %s)""", (user_info['username'], user_info['name'],
+                                 user_info['bankInformation'],
+                                 user_info['contact']))
+        self.connection.commit()
+
+        return {"registerStatus": True, "errorMessage": ""}
+
+    def check_valid_register_input(self, user_info):
+        """Check whether the input JSON is a valid input for user registration.
+        Returns a dictionary containing the error message if the input is
+        invalid, otherwise return None
+        Error messages:
+            - Missing information --> "Missing information"
             - duplicate username --> "Username exists"
             - not valid type --> "Not a valid user type"
-            - signed up --> "Signup successful"
+            - success --> "Register successful"
         """
-        return "blopp"
+
+        self.connection.rollback()
+        cursor = self.connection.cursor()
+
+        if "userType" not in user_info or \
+                "username" not in user_info or \
+                "password" not in user_info or \
+                "name" not in user_info or \
+                "contact" not in user_info:
+            return {"registerStatus": False,
+                    "errorMessage": "Missing information"}
+
+        valid_type = ('Driver', 'Customer', 'Supplier')
+        if user_info['userType'] not in valid_type:
+            return {"registerStatus": False,
+                    "errorMessage": "Not a valid user type"}
+
+        if not user_info['userType'] == "Driver":
+            if "bankInformation" not in user_info:
+                return {"registerStatus": False,
+                        "errorMessage": "Missing information"}
+
+        if user_info['userType'] == 'Customer':
+            if "address" not in user_info:
+                return {"registerStatus": False,
+                        "errorMessage": "Missing information"}
+
+        username = user_info['username']
+        cursor.execute("""SELECT * From loginInfo where username = %s""",
+                       (username,))
+        result = cursor.fetchall()
+        if not len(result) == 0:
+            return {"registerStatus": False,
+                    "errorMessage": "Duplicate username"}
+
+        return None
 
     def attempt_login(self, username: str, password: str):
         """Return a JSON indicating if a login attempt was successful with
-        given <username> and <password>.
+        given <username> and <password>. If it is, the JSON field
+        "usertype" will contain the string that represent the type of user
+        that associates with this username.
         """
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT username, password, usertype 
+        self.connection.rollback()
+        cursor.execute("""SELECT username, password, userType 
                        FROM loginInfo WHERE username = %s""",
                        (username,))
         result = cursor.fetchone()
@@ -49,7 +128,7 @@ class PostgresDatabase(DatabaseInterface):
             return {"loginStatus": False}
         elif result[1] == password:
             return {"loginStatus": True,
-                            "usertype": result[2]}
+                    "userType": result[2]}
         else:
             return {"loginStatus": False}
 
@@ -91,6 +170,3 @@ class PostgresDatabase(DatabaseInterface):
             ('Sophie', 'sophie12345', 'Supplier')""")
 
             self.connection.commit()
-
-
-
