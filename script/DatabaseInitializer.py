@@ -1,12 +1,21 @@
-import psycopg2
-
 
 class DatabaseInitializer:
+    """
+    A class used to initialize the tables in a SQL-based database
+    """
 
-    def __init__(self, connection):
+    def __init__(self, connection) -> None:
+        """
+        Inject a reference to the database connection
+        :param connection: database connection object
+        """
         self.connection = connection
 
-    def initialize_login_info(self):
+    def __initialize_login_info(self) -> None:
+        """
+        Check if the database contains a table of login info. If not, initialize
+        the table.
+        """
         cursor = self.connection.cursor()
 
         # initialize the LoginInfo table
@@ -20,7 +29,11 @@ class DatabaseInitializer:
                     userType varchar(20))""")
             self.connection.commit()
 
-    def initialize_customers(self):
+    def __initialize_customers(self):
+        """
+        Check if the database contains a table of customers. If not, initialize
+        the table.
+        """
         cursor = self.connection.cursor()
         # initialize the Customer table
         try:
@@ -35,7 +48,11 @@ class DatabaseInitializer:
                     contact varchar(255))""")
             self.connection.commit()
 
-    def initialize_drivers(self):
+    def __initialize_drivers(self):
+        """
+        Check if the database contains a table of drivers. If not, initialize
+        the table.
+        """
         cursor = self.connection.cursor()
         # initialize the Drivers table
         try:
@@ -48,7 +65,11 @@ class DatabaseInitializer:
                     contact varchar(255))""")
             self.connection.commit()
 
-    def initialize_suppliers(self):
+    def __initialize_suppliers(self):
+        """
+        Check if the database contains a table of suppliers. If not, initialize
+        the table.
+        """
         cursor = self.connection.cursor()
 
         # initialize the Supplier table
@@ -63,7 +84,11 @@ class DatabaseInitializer:
                     contact varchar(255) not null)""")
             self.connection.commit()
 
-    def initialize_invoices(self):
+    def __initialize_invoices(self):
+        """
+        Check if the database contains a table of invoices. If not, initialize
+        the table.
+        """
         cursor = self.connection.cursor()
 
         # initialize the Supplier table
@@ -84,7 +109,11 @@ class DatabaseInitializer:
                     )""")
             self.connection.commit()
 
-    def initialize_orders(self):
+    def __initialize_orders(self):
+        """
+        Check if the database contains a table of orders. If not, initialize
+        the table.
+        """
         cursor = self.connection.cursor()
         try:
             cursor.execute("SELECT * FROM Orders LIMIT 1")
@@ -99,9 +128,9 @@ class DatabaseInitializer:
             self.connection.commit()
 
     def initialize(self):
-        self.initialize_login_info()
-        self.initialize_customers()
-        self.initialize_drivers()
-        self.initialize_suppliers()
-        self.initialize_invoices()
-        self.initialize_orders()
+        self.__initialize_login_info()
+        self.__initialize_customers()
+        self.__initialize_drivers()
+        self.__initialize_suppliers()
+        self.__initialize_invoices()
+        self.__initialize_orders()

@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify, abort
-import PostgresDatabase
+from script import PostgresDatabase
 
 app = Flask(__name__)
 db = PostgresDatabase.PostgresDatabase()
