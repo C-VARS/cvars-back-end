@@ -29,7 +29,7 @@ class PostgresDatabase(DatabaseInterface):
             else:
                 self.connection = psycopg2.connect(DATABASE_URL,
                                                    sslmode='require')
-            self.__initialize()
+            self.initialize()
         except psycopg2.OperationalError as e:
             print("Something happened rip" + e.pgerror)
 
