@@ -21,7 +21,7 @@ class DatabaseInitializer:
         # initialize the LoginInfo table
         try:
             cursor.execute("SELECT * From LoginInfo LIMIT 1")
-        except :
+        except:
             self.connection.rollback()
             cursor.execute("""CREATE TABLE LoginInfo (
                     username varchar(20) NOT NULL PRIMARY KEY, 
