@@ -14,7 +14,7 @@ class PostgresDatabase(DatabaseInterface):
     PostgresSQL database. Can run either locally or on Heroku
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize the database interface object by connecting to PostgresSQL
         given the system information of whether it is running local or on
@@ -24,7 +24,7 @@ class PostgresDatabase(DatabaseInterface):
             if DATABASE_URL == "None":
                 self.connection = psycopg2.connect(host="localhost",
                                                    user="postgres",
-                                                   password="alexyang0204",
+                                                   password="snamVklY_9683",
                                                    dbname="postgres")
             else:
                 self.connection = psycopg2.connect(DATABASE_URL,
@@ -44,7 +44,7 @@ class PostgresDatabase(DatabaseInterface):
          :return: A dictionary in the format of {"registerStatus": True/False,
                                                  "errorMessage": "Message"}
          """
-        error_check_message = self.__check_valid_register_input(user_info)
+        error_check_message = self._check_valid_register_input(user_info)
         if error_check_message is not None:
             return error_check_message
 
@@ -73,7 +73,7 @@ class PostgresDatabase(DatabaseInterface):
 
         return {"registerStatus": True, "errorMessage": ""}
 
-    def ___check_valid_register_input(self, user_info) -> Dict:
+    def _check_valid_register_input(self, user_info) -> Dict:
         """
         Check whether the input JSON is a valid input for user registration.
         Returns a dictionary containing the error message if the input is

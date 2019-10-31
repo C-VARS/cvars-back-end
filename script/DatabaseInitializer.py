@@ -11,7 +11,7 @@ class DatabaseInitializer:
         """
         self.connection = connection
 
-    def __initialize_login_info(self) -> None:
+    def _initialize_login_info(self) -> None:
         """
         Check if the database contains a table of login info. If not, initialize
         the table.
@@ -21,7 +21,7 @@ class DatabaseInitializer:
         # initialize the LoginInfo table
         try:
             cursor.execute("SELECT * From LoginInfo LIMIT 1")
-        except:
+        except :
             self.connection.rollback()
             cursor.execute("""CREATE TABLE LoginInfo (
                     username varchar(20) NOT NULL PRIMARY KEY, 
@@ -29,7 +29,7 @@ class DatabaseInitializer:
                     userType varchar(20))""")
             self.connection.commit()
 
-    def __initialize_customers(self):
+    def _initialize_customers(self) -> None:
         """
         Check if the database contains a table of customers. If not, initialize
         the table.
@@ -48,7 +48,7 @@ class DatabaseInitializer:
                     contact varchar(255))""")
             self.connection.commit()
 
-    def __initialize_drivers(self):
+    def _initialize_drivers(self):
         """
         Check if the database contains a table of drivers. If not, initialize
         the table.
@@ -65,7 +65,7 @@ class DatabaseInitializer:
                     contact varchar(255))""")
             self.connection.commit()
 
-    def __initialize_suppliers(self):
+    def _initialize_suppliers(self):
         """
         Check if the database contains a table of suppliers. If not, initialize
         the table.
@@ -84,7 +84,7 @@ class DatabaseInitializer:
                     contact varchar(255) not null)""")
             self.connection.commit()
 
-    def __initialize_invoices(self):
+    def _initialize_invoices(self):
         """
         Check if the database contains a table of invoices. If not, initialize
         the table.
@@ -109,7 +109,7 @@ class DatabaseInitializer:
                     )""")
             self.connection.commit()
 
-    def __initialize_orders(self):
+    def _initialize_orders(self):
         """
         Check if the database contains a table of orders. If not, initialize
         the table.
@@ -127,10 +127,11 @@ class DatabaseInitializer:
                     """)
             self.connection.commit()
 
-    def initialize(self):
-        self.__initialize_login_info()
-        self.__initialize_customers()
-        self.__initialize_drivers()
-        self.__initialize_suppliers()
-        self.__initialize_invoices()
-        self.__initialize_orders()
+    def initialize(self) -> None:
+        """ Initialize this database."""
+        self._initialize_login_info()
+        self._initialize_customers()
+        self._initialize_drivers()
+        self._initialize_suppliers()
+        self._initialize_invoices()
+        self._initialize_orders()

@@ -34,7 +34,7 @@ class DatabaseInterface:
         """
         raise NotImplementedError
 
-    def get_invoice_information(self, username: str) -> Dict:
+    def get_invoice_information(self, username: str):
         raise NotImplementedError
 
     def assign_driver(self, invoice_id: int, username: str):
