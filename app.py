@@ -45,7 +45,7 @@ def register_user():
     body is not a JSON, return a HTTP400 error. Otherwise, the database
     interface will handle the response and return a dictionary, which will be
     formatted into JSON.
-    :return: JSON formatted response
+    :return: JSON formatted responses
     """
     register_info = request.get_json()
     if not register_info:
