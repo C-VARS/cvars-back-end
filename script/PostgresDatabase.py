@@ -1,5 +1,5 @@
 import os
-from typing import Dict
+from typing import Optional, Dict
 
 from script.DatabaseInitializer import DatabaseInitializer
 from script.DatabaseInterface import DatabaseInterface
@@ -22,6 +22,7 @@ class PostgresDatabase(DatabaseInterface):
         """
         try:
             if DATABASE_URL == "None":
+                # connect to local db
                 self.connection = psycopg2.connect(host="localhost",
                                                    user="postgres",
                                                    password="snamVklY_9683",
@@ -29,7 +30,8 @@ class PostgresDatabase(DatabaseInterface):
             else:
                 self.connection = psycopg2.connect(DATABASE_URL,
                                                    sslmode='require')
-            self.initialize()
+            # initialize the db
+            self._initialize()
         except psycopg2.OperationalError as e:
             print("Something happened rip" + e.pgerror)
 
@@ -38,7 +40,7 @@ class PostgresDatabase(DatabaseInterface):
 
     def register_user(self, user_info) -> Dict:
         """
-         An method to register a new user in the database
+         An method to register a new user with user_info in the database
          :param user_info: JSON format argument that contains information
          necessary to create a new user
          :return: A dictionary in the format of {"registerStatus": True/False,
@@ -46,38 +48,49 @@ class PostgresDatabase(DatabaseInterface):
          """
         error_check_message = self._check_valid_register_input(user_info)
         if error_check_message is not None:
+            # there was an error, the user with given user_info is invalid
             return error_check_message
 
         self.connection.rollback()
         cursor = self.connection.cursor()
 
+        # register a new user
         cursor.execute("""INSERT INTO loginInfo VALUES(%s, %s, %s)""",
                        (user_info['username'], user_info['password'],
                         user_info['userType']))
+
+        # register a new driver
         if user_info['userType'] == 'Driver':
             cursor.execute("""INSERT INTO Drivers VALUES (
             %s, %s, %s)""", (user_info['username'], user_info['name'],
                              user_info['contact']))
+
+        # register a new customer
         elif user_info['userType'] == 'Customer':
             cursor.execute("""INSERT INTO Customers VALUES (
             %s, %s, %s, %s, %s)""", (user_info['username'], user_info['name'],
                                      user_info['bankInformation'],
                                      user_info['address'],
                                      user_info['contact']))
+        # register a new supplier
         elif user_info['userType'] == 'Supplier':
             cursor.execute("""INSERT INTO Suppliers VALUES (
             %s, %s, %s, %s)""", (user_info['username'], user_info['name'],
                                  user_info['bankInformation'],
                                  user_info['contact']))
+        # update the db
         self.connection.commit()
 
         return {"registerStatus": True, "errorMessage": ""}
 
-    def _check_valid_register_input(self, user_info) -> Dict:
+    def _check_valid_register_input(self, user_info) -> Optional[Dict]:
         """
-        Check whether the input JSON is a valid input for user registration.
-        Returns a dictionary containing the error message if the input is
+        Check whether the input JSON, user_info, is a valid input for
+        user registration.
+
+        Return a dictionary containing the error message if the input is
         invalid, otherwise return None
+
         Error messages:
             - Missing information --> "Missing information"
             - duplicate username --> "Username exists"
@@ -93,29 +106,35 @@ class PostgresDatabase(DatabaseInterface):
         self.connection.rollback()
         cursor = self.connection.cursor()
 
+        # Checking if user_info contains all the required information
         if "userType" not in user_info or \
                 "username" not in user_info or \
                 "password" not in user_info or \
                 "name" not in user_info or \
                 "contact" not in user_info:
+            # Return a dictionary containing the error message
             return {"registerStatus": False,
                     "errorMessage": "Missing information"}
 
         valid_type = ('Driver', 'Customer', 'Supplier')
         if user_info['userType'] not in valid_type:
+            # not valid type error
             return {"registerStatus": False,
                     "errorMessage": "Not a valid user type"}
 
         if user_info['username'] == "" or user_info['password'] == "":
+            # missing information error
             return {"registerStatus": False,
                     "errorMessage": "Missing information"}
 
         if not user_info['userType'] == "Driver":
+            # Customer and Supplier both need bank information for transaction
             if "bankInformation" not in user_info:
                 return {"registerStatus": False,
                         "errorMessage": "Missing information"}
 
         if user_info['userType'] == 'Customer':
+            # Customer address is needed for delivery
             if "address" not in user_info:
                 return {"registerStatus": False,
                         "errorMessage": "Missing information"}
@@ -125,6 +144,7 @@ class PostgresDatabase(DatabaseInterface):
                        (username,))
         result = cursor.fetchall()
         if not len(result) == 0:
+            # username must be unique for every user
             return {"registerStatus": False,
                     "errorMessage": "Duplicate username"}
 
@@ -132,7 +152,7 @@ class PostgresDatabase(DatabaseInterface):
 
     def attempt_login(self, username: str, password: str) -> Dict:
         """
-        An method to attempt a login operation using the parameters
+        An method to attempt a login operation using the username and password
         :param username: username of the login
         :param password: password of the login
         :return: A dictionary in the format of {"loginStatus": True/False,
@@ -141,17 +161,22 @@ class PostgresDatabase(DatabaseInterface):
         """
         cursor = self.connection.cursor()
         self.connection.rollback()
+
+        # look for the user with given username
         cursor.execute("""SELECT username, password, userType 
                        FROM loginInfo WHERE username = %s""",
                        (username,))
         result = cursor.fetchone()
 
         if result is None:
+            # user with username does not exist
             return {"loginStatus": False}
         elif result[1] == password:
+            # user typed in correct password
             return {"loginStatus": True,
                     "userType": result[2]}
         else:
+            # wrong password
             return {"loginStatus": False}
 
     def get_invoice_information(self, username: str):
@@ -166,7 +191,7 @@ class PostgresDatabase(DatabaseInterface):
     def confirm_payment(self, invoice_id: int):
         return "Oopsies"
 
-    def initialize(self) -> None:
+    def _initialize(self) -> None:
         """
         A private method to initialize the database tables using a
         DatabaseInitializer object
