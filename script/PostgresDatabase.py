@@ -106,6 +106,10 @@ class PostgresDatabase(DatabaseInterface):
             return {"registerStatus": False,
                     "errorMessage": "Not a valid user type"}
 
+        if user_info['username'] == "" or user_info['password'] == "":
+            return {"registerStatus": False,
+                    "errorMessage": "Missing information"}
+
         if not user_info['userType'] == "Driver":
             if "bankInformation" not in user_info:
                 return {"registerStatus": False,
