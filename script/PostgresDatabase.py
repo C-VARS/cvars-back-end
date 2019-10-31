@@ -36,6 +36,9 @@ class PostgresDatabase(DatabaseInterface):
             print("Something happened rip" + e.pgerror)
 
     def create_invoice(self, invoice_info):
+        """ Return an invoice.
+        (Testing method)
+        """
         return "Oopsies"
 
     def register_user(self, user_info) -> Dict:
@@ -180,7 +183,8 @@ class PostgresDatabase(DatabaseInterface):
             return {"loginStatus": False}
 
     def get_invoice_information(self, username: str):
-        return "Oopsies"
+        """Return the information that would show up on the invoice of a user
+        with <username>. """
 
     def assign_driver(self, invoice_id: int, username: str):
         return "Oopsies"
