@@ -189,8 +189,26 @@ class PostgresDatabase(DatabaseInterface):
     def assign_driver(self, invoice_id: int, username: str):
         return "Oopsies"
 
-    def update_status(self, invoice_id: int, status: str):
-        return "Oopsies"
+    def get_status(self, invoice_id: int):
+        """ Return a JSON file containing the status of the invoice with
+        invoice_id
+
+        Precondition: the status columns of the invoice table exists
+        """
+        cursor = self.connection.cursor()
+
+        # find the invoice with the corresponding invoice_id
+        cursor.execute("""SELECT onTheWay, arrived, payment 
+                        FROM Invoices WHERE invoiceID = %s""",
+                       (invoice_id,))
+
+        # save it as result
+        result = cursor.fetchone()
+
+        # return fetched results
+        return {"onTheWay": result[0],
+                "arrived": result[1],
+                "payment": result[2]}
 
     def confirm_payment(self, invoice_id: int):
         return "Oopsies"
