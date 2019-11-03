@@ -275,12 +275,66 @@ class PostgresDatabase(DatabaseInterface):
     def get_invoice_information(self, username: str):
         """Return the information that would show up on the invoice of a user
         with <username>. """
+        cursor = self.connection.cursor()
+        final_invoices = []
+        # Assuming it's a customer for now
+        # TODO: Add a switch for different customer types
+        # TODO: Break this into helpers.
+        cursor.execute("""SELECT invoiceID, issuedDate, completionDate 
+                        FROM Invoices WHERE customerUsername = %s""",
+                       (username,))
+        invoices = cursor.fetchall()
+        for invoice in invoices:
+            temp_orders = []
+            invoice_id = invoice[0]
+            # Find all orders that are associated with this invoices id
+            cursor.execute("""SELECT item, price, amount 
+                        FROM Orders WHERE invoiceID = %s""",
+                       (invoice_id,))
+            orders = cursor.fetchall()
+            # We construct a list of orders
+            for order in orders:
+                temp_orders.append(
+                    {
+                        "item": order[0],
+                        "price": order[1],
+                        "amount": order[2]
+                    }
+                )
+            # Construct and append a complete invoice to the list
+            final_invoices.append(
+                {
+                    "invoiceID": invoice[0],
+                    "issuedDate": invoice[1],
+                    "completionDate": invoice[2],
+                    "orders": temp_orders
+                }
+            )
+            return final_invoices
 
     def assign_driver(self, invoice_id: int, username: str):
         return "Oopsies"
 
-    def update_status(self, invoice_id: int, status: str):
-        return "Oopsies"
+    def get_status(self, invoice_id: int):
+        """ Return a JSON file containing the status of the invoice with
+        invoice_id
+
+        Precondition: the status columns of the invoice table exists
+        """
+        cursor = self.connection.cursor()
+
+        # find the invoice with the corresponding invoice_id
+        cursor.execute("""SELECT onTheWay, arrived, payment 
+                        FROM Invoices WHERE invoiceID = %s""",
+                       (invoice_id,))
+
+        # save it as result
+        result = cursor.fetchone()
+
+        # return fetched results
+        return {"onTheWay": result[0],
+                "arrived": result[1],
+                "payment": result[2]}
 
     def confirm_payment(self, invoice_id: int):
         return "Oopsies"
@@ -292,3 +346,24 @@ class PostgresDatabase(DatabaseInterface):
         """
         initializer = DatabaseInitializer(self.connection)
         initializer.initialize()
+        cursor = self.connection.cursor()
+
+        # Add Seed Data for an example invoice call
+        # TODO: Move this somewhere else
+
+        cursor.execute("""INSERT INTO Suppliers VALUES
+                ('Sophie', 'Sophie', 'Visa', 'nothing')""")
+
+        cursor.execute("""INSERT INTO Drivers VALUES
+                       ('Callum', 'Callum', '123')""")
+
+        cursor.execute("""INSERT INTO Invoices VALUES (%(a)s, %(b)s, %(c)s, %(d)s, %(e)s, %(f)s, %(g)s, %(h)s, %(i)s)
+                """, {'a':'87', 'b':'Raag', 'c':'Sophie', 'd':'Callum','e': datetime.date(2005, 11, 18),
+                      'f': datetime.date(2007, 11, 18), 'g':True, 'h':False, 'i':False})
+
+        cursor.execute("""INSERT INTO Orders VALUES
+                ('Cherry Coke', 72.23, 12, 87)""")
+
+        cursor.execute("""INSERT INTO Orders VALUES
+                ('Vanilla Coke', 72.23, 12, 87)""")
+

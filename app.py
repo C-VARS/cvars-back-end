@@ -37,8 +37,19 @@ def login():
 
     return jsonify(db.attempt_login(username, password))
 
+@app.route("/invoices", methods=['GET'])
+def get_invoices():
+    """
+    Return invoices constructed from the list defined in Database Interface 
+    associated with the paramters given
+    :return: JSON formatted response.
+    """
+    username = request.args.get('username', "")
+
+    return jsonify(db.get_invoice_information(username))
 
 @app.route("/users/register", methods=["POST"])
+
 def register_user():
     """
     A POST response that registers a new user in the database. If the
@@ -70,4 +81,4 @@ def create_invoice():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
