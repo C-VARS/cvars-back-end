@@ -1,6 +1,7 @@
 import os
 from typing import Optional, Dict
 
+from script import PresetInformation
 from script.DatabaseInitializer import DatabaseInitializer
 from script.DatabaseInterface import DatabaseInterface
 import psycopg2
@@ -290,7 +291,7 @@ class PostgresDatabase(DatabaseInterface):
             # Find all orders that are associated with this invoices id
             cursor.execute("""SELECT item, price, amount 
                         FROM Orders WHERE invoiceID = %s""",
-                       (invoice_id,))
+                           (invoice_id,))
             orders = cursor.fetchall()
             # We construct a list of orders
             for order in orders:
@@ -307,7 +308,8 @@ class PostgresDatabase(DatabaseInterface):
                     "invoiceID": invoice[0],
                     "issuedDate": invoice[1],
                     "completionDate": invoice[2],
-                    "orders": temp_orders
+                    "orders": temp_orders,
+                    "orderStatus": self.get_status(invoice_id)
                 }
             )
             return final_invoices
@@ -331,6 +333,11 @@ class PostgresDatabase(DatabaseInterface):
         # save it as result
         result = cursor.fetchone()
 
+        if result is None:
+            return {"onTheWay": False,
+                    "arrived": False,
+                    "payment": False}
+
         # return fetched results
         return {"onTheWay": result[0],
                 "arrived": result[1],
@@ -346,24 +353,15 @@ class PostgresDatabase(DatabaseInterface):
         """
         initializer = DatabaseInitializer(self.connection)
         initializer.initialize()
+
         cursor = self.connection.cursor()
+        cursor.execute("SELECT * from loginInfo")
 
-        # Add Seed Data for an example invoice call
-        # TODO: Move this somewhere else
-
-        cursor.execute("""INSERT INTO Suppliers VALUES
-                ('Sophie', 'Sophie', 'Visa', 'nothing')""")
-
-        cursor.execute("""INSERT INTO Drivers VALUES
-                       ('Callum', 'Callum', '123')""")
-
-        cursor.execute("""INSERT INTO Invoices VALUES (%(a)s, %(b)s, %(c)s, %(d)s, %(e)s, %(f)s, %(g)s, %(h)s, %(i)s)
-                """, {'a':'87', 'b':'Raag', 'c':'Sophie', 'd':'Callum','e': datetime.date(2005, 11, 18),
-                      'f': datetime.date(2007, 11, 18), 'g':True, 'h':False, 'i':False})
-
-        cursor.execute("""INSERT INTO Orders VALUES
-                ('Cherry Coke', 72.23, 12, 87)""")
-
-        cursor.execute("""INSERT INTO Orders VALUES
-                ('Vanilla Coke', 72.23, 12, 87)""")
-
+        if cursor.fetchone() is None:
+            self.register_user(PresetInformation.Alex)
+            self.register_user(PresetInformation.Callum)
+            self.register_user(PresetInformation.Raag)
+            self.register_user(PresetInformation.Sophie)
+            self.register_user(PresetInformation.Vlad)
+            self.create_invoice(PresetInformation.invoice_one)
+            self.create_invoice(PresetInformation.invoice_two)
