@@ -10,7 +10,8 @@ class DatabaseInterface:
         An abstract method to create an invoice in the database
         :param invoice_info: JSON format argument that contains information
         necessary to create an invoice
-        :return: A dictionary in the format of {"creationSuccess": True/False}
+        :return: A dictionary in the format of
+        {"invoiceCreationStatus": True/False}
         """
         raise NotImplementedError
 

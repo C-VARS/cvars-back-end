@@ -101,11 +101,11 @@ class DatabaseInitializer:
                     customerUsername varchar(255) references Customers(username),
                     supplierUsername varchar(255) references Suppliers(username),
                     driverUsername varchar(255) references Drivers(username), 
-                    issuedDate date,
-                    completionDate date,
-                    onTheWay boolean, 
-                    arrived boolean,
-                    payment boolean
+                    issuedDate timestamp not null default current_timestamp ,
+                    completionDate timestamp,
+                    onTheWay boolean default false, 
+                    arrived boolean default false,
+                    payment boolean default false
                     )""")
             self.connection.commit()
 

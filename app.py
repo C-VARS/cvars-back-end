@@ -41,16 +41,32 @@ def login():
 @app.route("/users/register", methods=["POST"])
 def register_user():
     """
-    A POST method response that registers a new user in the database. If the
+    A POST response that registers a new user in the database. If the
     body is not a JSON, return a HTTP400 error. Otherwise, the database
     interface will handle the response and return a dictionary, which will be
     formatted into JSON.
-    :return: JSON formatted responses
+    :return: JSON formatted responsesc
     """
     register_info = request.get_json()
     if not register_info:
         abort(400)
     return jsonify(db.register_user(register_info))
+
+
+@app.route("/invoices/create", methods=['POST'])
+def create_invoice():
+    """
+    A POST function that creates a new invoice in the database in accordance
+    to the given JSON information. If the request is not JSON, return a
+    HTTP400 error. Otherwise, the database interface will handle the response
+    and return a dictionary containing the success of the creation, which
+    will be returned as a JSON
+    :return:
+    """
+    invoice_info = request.get_json()
+    if not invoice_info:
+        abort(400)
+    return jsonify(db.create_invoice(invoice_info))
 
 
 if __name__ == '__main__':
