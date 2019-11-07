@@ -282,15 +282,25 @@ class PostgresDatabase(DatabaseInterface):
         cursor.execute("""SELECT userType FROM LoginInfo WHERE username = %s""",
                        (username,))
 
-        userType = cursor.fetchone()
-        if userType is None:
-            #return a error message in json
-        elif userType == "Driver":
-        elif userType == "Supplier":
-        elif userType == "Customer":
-        # TODO: Add a switch for different customer types
-            # switch
-        # TODO: Break this into helpers.
+        user_type = cursor.fetchone()
+        if user_type is None:
+            return {"invoiceFetchStatus": False}
+        elif user_type[0] == "Driver":
+            return self._get_driver_information(username)
+        elif user_type[0] == "Supplier":
+            return self._get_supplier_information(username)
+        elif user_type[0] == "Customer":
+            return self._get_customer_information(username)
+
+    def _get_driver_information(self, username):
+        pass
+
+    def _get_supplier_information(self, username):
+        pass
+
+    def _get_customer_information(self, username):
+        cursor = self.connection.cursor()
+        final_invoices = []
             # one helper per user type
         # get userType from LoginInfo using username
         # if it returns null then return some error message in json
