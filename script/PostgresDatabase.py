@@ -277,67 +277,99 @@ class PostgresDatabase(DatabaseInterface):
         """Return the information that would show up on the invoice of a user
         with <username>. """
         cursor = self.connection.cursor()
-        final_invoices = []
-        # Assuming it's a customer for now
         cursor.execute("""SELECT userType FROM LoginInfo WHERE username = %s""",
                        (username,))
 
         user_type = cursor.fetchone()
+
         if user_type is None:
             return {"invoiceFetchStatus": False}
+
         elif user_type[0] == "Driver":
-            return self._get_driver_information(username)
+            cursor.execute("""SELECT * FROM Invoices 
+                            WHERE driverUsername = %s""", (username,))
+
         elif user_type[0] == "Supplier":
-            return self._get_supplier_information(username)
+            cursor.execute("""SELECT * FROM Invoices 
+                            WHERE supplierUsername = %s""", (username,))
+
         elif user_type[0] == "Customer":
-            return self._get_customer_information(username)
-
-    def _get_driver_information(self, username):
-        pass
-
-    def _get_supplier_information(self, username):
-        pass
-
-    def _get_customer_information(self, username):
-        cursor = self.connection.cursor()
-        final_invoices = []
-            # one helper per user type
-        # get userType from LoginInfo using username
-        # if it returns null then return some error message in json
-        # else divide into cases depending on type
-        cursor.execute("""SELECT invoiceID, issuedDate, completionDate 
-                        FROM Invoices WHERE customerUsername = %s""",
-                       (username,))
+            cursor.execute("""SELECT * FROM Invoices 
+                            WHERE customerUsername = %s""", (username,))
         invoices = cursor.fetchall()
+
+        return self._generate_invoices(invoices, cursor)
+
+    def _generate_invoices(self, invoices, cursor) -> list:
+        final_invoices = []
         for invoice in invoices:
             temp_orders = []
+            total = 0
             invoice_id = invoice[0]
             # Find all orders that are associated with this invoices id
             cursor.execute("""SELECT item, price, amount 
                         FROM Orders WHERE invoiceID = %s""",
                            (invoice_id,))
             orders = cursor.fetchall()
-            # We construct a list of orders
+            # We construct a list of orders, calculate total price
             for order in orders:
+                price = order.get("price")
+                amount = order.get("amount")
+                total += price * amount
                 temp_orders.append(
                     {
                         "item": order[0],
-                        "price": order[1],
-                        "amount": order[2]
+                        "price": price,
+                        "amount": amount
                     }
                 )
             # Construct and append a complete invoice to the list
-            # get actual names of customer and supplier names to put on invoice
+
+            # get actual names, addresses, contacts of users
+            customer_info = self._get_customer_info(invoice[1])
+            supplier_info = self._get_supplier_info(invoice[2])
+            driver_info = self._get_driver_info(invoice[3])
+
             final_invoices.append(
                 {
                     "invoiceID": invoice[0],
                     "issuedDate": invoice[1],
                     "completionDate": invoice[2],
+                    "CustomerName": customer_info[0],
+                    "CustomerAddress": customer_info[1],
+                    "CustomerContact": customer_info[2],
+                    "DriverName": driver_info[0],
+                    "DriverContact": driver_info[1],
+                    "SupplierName": supplier_info[0],
+                    "SupplierContact": supplier_info[1],
                     "orders": temp_orders,
-                    "orderStatus": self.get_status(invoice_id)
+                    "Total": total,
+                    "orderStatus": self.get_status(invoice_id),
                 }
             )
         return final_invoices
+
+    def _get_customer_info(self, username):
+        """Return a tuple of (name, address, contact) of the customer with
+        username"""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT name, address, contact FROM Customers
+                            WHERE username = %s""", (username,))
+        return cursor.fetchone()
+
+    def _get_driver_info(self, username):
+        """Return a tuple of (name, contact) of the driver with username"""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT name, contact FROM Drivers
+                            WHERE username = %s""", (username,))
+        return cursor.fetchone()
+
+    def _get_supplier_info(self, username):
+        """Return a tuple of (name, contact) of the supplier with username"""
+        cursor = self.connection.cursor()
+        cursor.execute("""SELECT name, contact FROM Suppliers
+                            WHERE username = %s""", (username,))
+        return cursor.fetchone()
 
     def assign_driver(self, invoice_id: int, username: str):
         return "Oopsies"
