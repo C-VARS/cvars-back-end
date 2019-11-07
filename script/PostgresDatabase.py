@@ -26,7 +26,7 @@ class PostgresDatabase(DatabaseInterface):
                 # connect to local db
                 self.connection = psycopg2.connect(host="localhost",
                                                    user="postgres",
-                                                   password="1234",
+                                                   password="alexyang0204",
                                                    dbname="postgres")
             else:
                 self.connection = psycopg2.connect(DATABASE_URL,
@@ -35,7 +35,6 @@ class PostgresDatabase(DatabaseInterface):
             self._initialize()
         except psycopg2.OperationalError as e:
             print("Something happened rip" + e.pgerror)
-
 
     def create_invoice(self, invoice_info) -> Dict:
         """ Create a new invoice in the database. Return a Dict representing
@@ -334,8 +333,8 @@ class PostgresDatabase(DatabaseInterface):
                     "issuedDate": invoice[4],
                     "completionDate": invoice[5],
                     "customerName": customer_info[0],
-                    "customerAddress": customer_info[1],
-                    "customerContact": customer_info[2],
+                    "customerAddress": customer_info[3],
+                    "customerContact": customer_info[1],
                     "driverName": driver_info[0],
                     "driverContact": driver_info[1],
                     "supplierName": supplier_info[0],
@@ -350,7 +349,8 @@ class PostgresDatabase(DatabaseInterface):
         """Return a tuple of (name, address, contact) of the customer with
         username"""
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT name, address, contact FROM Customers
+        cursor.execute("""SELECT name, contact, bankInformation, address 
+                            FROM Customers
                             WHERE username = %s""", (username,))
         return cursor.fetchone()
 
@@ -367,9 +367,37 @@ class PostgresDatabase(DatabaseInterface):
     def _get_supplier_info(self, username):
         """Return a tuple of (name, contact) of the supplier with username"""
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT name, contact FROM Suppliers
+        cursor.execute("""SELECT name, contact, bankInformation FROM Suppliers
                             WHERE username = %s""", (username,))
         return cursor.fetchone()
+
+    def get_user_information(self, username: str):
+        cursor = self.connection.cursor()
+
+        cursor.execute("""SELECT userType from loginInfo where username = %s""",
+                       (username, ))
+        result = cursor.fetchone()
+
+        if result is None:
+            return {"userInformation": False}
+
+        user_type = result[0]
+        if user_type == "Driver":
+            info = self._get_driver_info(username)
+        elif user_type == "Customer":
+            info = self._get_customer_info(username)
+        elif user_type == "Supplier":
+            info = self._get_supplier_info(username)
+
+        dict = {
+            "name": info[0],
+            "contact": info[1],
+            "address": info[3] if len(info) > 3 else "N/A",
+            "bankInformation": info[2] if len(info) > 2 else "N/A"
+        }
+
+        return dict;
+
 
     def assign_driver(self, invoice_id: int, username: str):
         return "Oopsies"

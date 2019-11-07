@@ -36,6 +36,20 @@ class DatabaseInterface:
         raise NotImplementedError
 
     def get_invoice_information(self, username: str):
+        """
+        An abstract method to get invoice information related to the user
+        :param username: username of the user
+        :return: a list of dictionaries containing all the invoices relevant
+        to the user
+        """
+        raise NotImplementedError
+
+    def get_user_information(self, username: str):
+        """
+        An abstract method to get all the information related to a user
+        :param username: username of the user
+        :return: A dictionary of the user information
+        """
         raise NotImplementedError
 
     def assign_driver(self, invoice_id: int, username: str):
