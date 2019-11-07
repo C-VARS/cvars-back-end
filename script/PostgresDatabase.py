@@ -313,14 +313,11 @@ class PostgresDatabase(DatabaseInterface):
             orders = cursor.fetchall()
             # We construct a list of orders, calculate total price
             for order in orders:
-                price = order.get("price")
-                amount = order.get("amount")
-                total += price * amount
                 temp_orders.append(
                     {
                         "item": order[0],
-                        "price": price,
-                        "amount": amount
+                        "price": order[1],
+                        "amount": order[2]
                     }
                 )
             # Construct and append a complete invoice to the list
@@ -333,17 +330,16 @@ class PostgresDatabase(DatabaseInterface):
             final_invoices.append(
                 {
                     "invoiceID": invoice[0],
-                    "issuedDate": invoice[1],
-                    "completionDate": invoice[2],
-                    "CustomerName": customer_info[0],
-                    "CustomerAddress": customer_info[1],
-                    "CustomerContact": customer_info[2],
-                    "DriverName": driver_info[0],
-                    "DriverContact": driver_info[1],
-                    "SupplierName": supplier_info[0],
-                    "SupplierContact": supplier_info[1],
+                    "issuedDate": invoice[4],
+                    "completionDate": invoice[5],
+                    "customerName": customer_info[0],
+                    "customerAddress": customer_info[1],
+                    "customerContact": customer_info[2],
+                    "driverName": driver_info[0],
+                    "driverContact": driver_info[1],
+                    "supplierName": supplier_info[0],
+                    "supplierContact": supplier_info[1],
                     "orders": temp_orders,
-                    "Total": total,
                     "orderStatus": self.get_status(invoice_id),
                 }
             )
@@ -360,6 +356,9 @@ class PostgresDatabase(DatabaseInterface):
     def _get_driver_info(self, username):
         """Return a tuple of (name, contact) of the driver with username"""
         cursor = self.connection.cursor()
+        if username is None:
+            return "N/A", "N/A"
+
         cursor.execute("""SELECT name, contact FROM Drivers
                             WHERE username = %s""", (username,))
         return cursor.fetchone()
