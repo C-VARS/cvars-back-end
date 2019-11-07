@@ -20,6 +20,25 @@ def index():
     """
     return "Just testing"
 
+### USERS
+
+@app.route("/users", methods=['GET'])
+def get_user_data():
+    """
+    Return the json information requred to create a POJO using Retrofit
+    :return: JSON formatted response
+    """
+    username = request.args.get('username', "")
+    userType = request.args.get('userType', "")
+
+    user_info = {
+        'Driver': db._get_driver_info(username),
+        'Customer': db._get_customer_info(username),
+        'supplier': db._get_supplier_info(username),
+    }[userType]
+
+    return jsonify(user_info)
+
 
 @app.route("/users/login", methods=['GET'])
 def login():
@@ -37,18 +56,6 @@ def login():
 
     return jsonify(db.attempt_login(username, password))
 
-
-@app.route("/invoices", methods=['GET'])
-def get_invoices():
-    """
-    Return invoices constructed from the list defined in Database Interface
-    associated with the paramters given
-    :return: JSON formatted response.
-    """
-    username = request.args.get('username', "")
-    return jsonify(db.get_invoice_information(username))
-
-
 @app.route("/users/register", methods=["POST"])
 def register_user():
     """
@@ -63,6 +70,17 @@ def register_user():
         abort(400)
     return jsonify(db.register_user(register_info))
 
+### INVOICES
+
+@app.route("/invoices", methods=['GET'])
+def get_invoices():
+    """
+    Return invoices constructed from the list defined in Database Interface
+    associated with the paramters given
+    :return: JSON formatted response.
+    """
+    username = request.args.get('username', "")
+    return jsonify(db.get_invoice_information(username))
 
 @app.route("/invoices/create", methods=['POST'])
 def create_invoice():

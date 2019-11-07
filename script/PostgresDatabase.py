@@ -26,7 +26,7 @@ class PostgresDatabase(DatabaseInterface):
                 # connect to local db
                 self.connection = psycopg2.connect(host="localhost",
                                                    user="postgres",
-                                                   password="alexyang0204",
+                                                   password="1234",
                                                    dbname="postgres")
             else:
                 self.connection = psycopg2.connect(DATABASE_URL,
@@ -35,6 +35,7 @@ class PostgresDatabase(DatabaseInterface):
             self._initialize()
         except psycopg2.OperationalError as e:
             print("Something happened rip" + e.pgerror)
+
 
     def create_invoice(self, invoice_info) -> Dict:
         """ Create a new invoice in the database. Return a Dict representing
