@@ -4,6 +4,7 @@ from typing import Optional, Dict
 from script import PresetInformation
 from script.DatabaseInitializer import DatabaseInitializer
 from script.DatabaseInterface import DatabaseInterface
+
 import psycopg2
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "None")
@@ -35,7 +36,6 @@ class PostgresDatabase(DatabaseInterface):
             self._initialize()
         except psycopg2.OperationalError as e:
             print("Something happened rip" + e.pgerror)
-
 
     def create_invoice(self, invoice_info) -> Dict:
         """ Create a new invoice in the database. Return a Dict representing
@@ -403,6 +403,23 @@ class PostgresDatabase(DatabaseInterface):
 
     def confirm_payment(self, invoice_id: int):
         return "Oopsies"
+
+    def update_status(self, invoice_id: int, status: dict):
+        """Update the status of the invoice with invoice_id.
+
+        Precondition: Only one state of the status is True, and the state that
+        is True should be the only state that is updated.
+        """
+        cursor = self.connection.cursor()
+
+        for state in status:
+            if status[state]:
+                to_update = state
+
+        cursor.execute(f"""UPDATE Invoices SET {to_update} = NOT {to_update}
+                        WHERE invoiceID = {invoice_id}""")
+
+        self.connection.commit()
 
     def _initialize(self) -> None:
         """

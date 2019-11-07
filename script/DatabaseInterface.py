@@ -41,7 +41,12 @@ class DatabaseInterface:
     def assign_driver(self, invoice_id: int, username: str):
         raise NotImplementedError
 
-    def update_status(self, invoice_id: int, status: str):
+    def update_status(self, invoice_id: int, status: dict):
+        """Update the status of the invoice with invoice_id.
+
+        Precondition: Only one state of the status is True, and the state that
+        is True should be the only state that is updated.
+        """
         raise NotImplementedError
 
     def confirm_payment(self, invoice_id: int):
