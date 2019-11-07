@@ -1,6 +1,8 @@
 import os
 from typing import Optional, Dict
 
+from psycopg2 import sql
+
 from script import PresetInformation
 from script.DatabaseInitializer import DatabaseInitializer
 from script.DatabaseInterface import DatabaseInterface
@@ -376,7 +378,7 @@ class PostgresDatabase(DatabaseInterface):
         cursor = self.connection.cursor()
 
         cursor.execute("""SELECT userType from loginInfo where username = %s""",
-                       (username, ))
+                       (username,))
         result = cursor.fetchone()
 
         if result is None:
@@ -398,7 +400,6 @@ class PostgresDatabase(DatabaseInterface):
         }
 
         return dict;
-
 
     def assign_driver(self, invoice_id: int, username: str):
         return "Oopsies"
@@ -437,10 +438,21 @@ class PostgresDatabase(DatabaseInterface):
         """
         cursor = self.connection.cursor()
 
-        cursor.execute(f"""UPDATE Invoices SET {status} = NOT {status}
-                        WHERE invoiceID = {invoice_id}""")
+        if status == "onTheWay":
+            cursor.execute("""UPDATE Invoices SET onTheWay = NOT onTheWay
+                            WHERE invoiceID = %s""", (invoice_id,))
+        elif status == "arrived":
+            cursor.execute("""UPDATE Invoices SET arrived = NOT arrived
+                            WHERE invoiceID = %s""", (invoice_id,))
+        elif status == "payment":
+            cursor.execute("""UPDATE Invoices SET payment = NOT payment
+                            WHERE invoiceID = %s""", (invoice_id,))
+        else:
+            return {"updateStatus": False}
 
         self.connection.commit()
+
+        return {"updateStatus": True}
 
     def _initialize(self) -> None:
         """

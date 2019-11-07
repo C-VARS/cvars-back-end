@@ -87,12 +87,24 @@ def create_invoice():
     HTTP400 error. Otherwise, the database interface will handle the response
     and return a dictionary containing the success of the creation, which
     will be returned as a JSON
-    :return:
+    :return: {"invoiceCreationStatus":True/False, "errorMessage":""}
     """
     invoice_info = request.get_json()
     if not invoice_info:
         abort(400)
     return jsonify(db.create_invoice(invoice_info))
+
+
+@app.route("/invoices/update", methods=["POST"])
+def update_status():
+    """
+    A POST function that updates the value of a certain field in an invoice.
+    :return: {"updateStatus":True/False}
+    """
+    invoice_id = request.args.get('invoiceID', "")
+    field = request.args.get('status', "")
+
+    return jsonify(db.update_status(invoice_id, field))
 
 
 if __name__ == '__main__':
