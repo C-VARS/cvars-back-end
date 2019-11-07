@@ -279,8 +279,22 @@ class PostgresDatabase(DatabaseInterface):
         cursor = self.connection.cursor()
         final_invoices = []
         # Assuming it's a customer for now
+        cursor.execute("""SELECT userType FROM LoginInfo WHERE username = %s""",
+                       (username,))
+
+        userType = cursor.fetchone()
+        if userType is None:
+            #return a error message in json
+        elif userType == "Driver":
+        elif userType == "Supplier":
+        elif userType == "Customer":
         # TODO: Add a switch for different customer types
+            # switch
         # TODO: Break this into helpers.
+            # one helper per user type
+        # get userType from LoginInfo using username
+        # if it returns null then return some error message in json
+        # else divide into cases depending on type
         cursor.execute("""SELECT invoiceID, issuedDate, completionDate 
                         FROM Invoices WHERE customerUsername = %s""",
                        (username,))
@@ -303,6 +317,7 @@ class PostgresDatabase(DatabaseInterface):
                     }
                 )
             # Construct and append a complete invoice to the list
+            # get actual names of customer and supplier names to put on invoice
             final_invoices.append(
                 {
                     "invoiceID": invoice[0],
@@ -312,7 +327,7 @@ class PostgresDatabase(DatabaseInterface):
                     "orderStatus": self.get_status(invoice_id)
                 }
             )
-            return final_invoices
+        return final_invoices
 
     def assign_driver(self, invoice_id: int, username: str):
         return "Oopsies"
