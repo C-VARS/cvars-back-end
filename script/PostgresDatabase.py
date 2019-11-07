@@ -27,7 +27,7 @@ class PostgresDatabase(DatabaseInterface):
                 # connect to local db
                 self.connection = psycopg2.connect(host="localhost",
                                                    user="postgres",
-                                                   password="1234",
+                                                   password="alexyang0204",
                                                    dbname="postgres")
             else:
                 self.connection = psycopg2.connect(DATABASE_URL,
@@ -314,14 +314,11 @@ class PostgresDatabase(DatabaseInterface):
             orders = cursor.fetchall()
             # We construct a list of orders, calculate total price
             for order in orders:
-                price = order.get("price")
-                amount = order.get("amount")
-                total += price * amount
                 temp_orders.append(
                     {
                         "item": order[0],
-                        "price": price,
-                        "amount": amount
+                        "price": order[1],
+                        "amount": order[2]
                     }
                 )
             # Construct and append a complete invoice to the list
@@ -334,17 +331,16 @@ class PostgresDatabase(DatabaseInterface):
             final_invoices.append(
                 {
                     "invoiceID": invoice[0],
-                    "issuedDate": invoice[1],
-                    "completionDate": invoice[2],
-                    "CustomerName": customer_info[0],
-                    "CustomerAddress": customer_info[1],
-                    "CustomerContact": customer_info[2],
-                    "DriverName": driver_info[0],
-                    "DriverContact": driver_info[1],
-                    "SupplierName": supplier_info[0],
-                    "SupplierContact": supplier_info[1],
+                    "issuedDate": invoice[4],
+                    "completionDate": invoice[5],
+                    "customerName": customer_info[0],
+                    "customerAddress": customer_info[3],
+                    "customerContact": customer_info[1],
+                    "driverName": driver_info[0],
+                    "driverContact": driver_info[1],
+                    "supplierName": supplier_info[0],
+                    "supplierContact": supplier_info[1],
                     "orders": temp_orders,
-                    "Total": total,
                     "orderStatus": self.get_status(invoice_id),
                 }
             )
@@ -354,13 +350,17 @@ class PostgresDatabase(DatabaseInterface):
         """Return a tuple of (name, address, contact) of the customer with
         username"""
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT name, address, contact FROM Customers
+        cursor.execute("""SELECT name, contact, bankInformation, address 
+                            FROM Customers
                             WHERE username = %s""", (username,))
         return cursor.fetchone()
 
     def _get_driver_info(self, username):
         """Return a tuple of (name, contact) of the driver with username"""
         cursor = self.connection.cursor()
+        if username is None:
+            return "N/A", "N/A"
+
         cursor.execute("""SELECT name, contact FROM Drivers
                             WHERE username = %s""", (username,))
         return cursor.fetchone()
@@ -368,9 +368,37 @@ class PostgresDatabase(DatabaseInterface):
     def _get_supplier_info(self, username):
         """Return a tuple of (name, contact) of the supplier with username"""
         cursor = self.connection.cursor()
-        cursor.execute("""SELECT name, contact FROM Suppliers
+        cursor.execute("""SELECT name, contact, bankInformation FROM Suppliers
                             WHERE username = %s""", (username,))
         return cursor.fetchone()
+
+    def get_user_information(self, username: str):
+        cursor = self.connection.cursor()
+
+        cursor.execute("""SELECT userType from loginInfo where username = %s""",
+                       (username, ))
+        result = cursor.fetchone()
+
+        if result is None:
+            return {"userInformation": False}
+
+        user_type = result[0]
+        if user_type == "Driver":
+            info = self._get_driver_info(username)
+        elif user_type == "Customer":
+            info = self._get_customer_info(username)
+        elif user_type == "Supplier":
+            info = self._get_supplier_info(username)
+
+        dict = {
+            "name": info[0],
+            "contact": info[1],
+            "address": info[3] if len(info) > 3 else "N/A",
+            "bankInformation": info[2] if len(info) > 2 else "N/A"
+        }
+
+        return dict;
+
 
     def assign_driver(self, invoice_id: int, username: str):
         return "Oopsies"

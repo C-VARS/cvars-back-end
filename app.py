@@ -20,8 +20,7 @@ def index():
     """
     return "Just testing"
 
-### USERS
-
+#USERS
 @app.route("/users", methods=['GET'])
 def get_user_data():
     """
@@ -29,15 +28,7 @@ def get_user_data():
     :return: JSON formatted response
     """
     username = request.args.get('username', "")
-    userType = request.args.get('userType', "")
-
-    user_info = {
-        'Driver': db._get_driver_info(username),
-        'Customer': db._get_customer_info(username),
-        'supplier': db._get_supplier_info(username),
-    }[userType]
-
-    return jsonify(user_info)
+    return jsonify(db.get_user_information(username))
 
 
 @app.route("/users/login", methods=['GET'])
@@ -56,6 +47,7 @@ def login():
 
     return jsonify(db.attempt_login(username, password))
 
+
 @app.route("/users/register", methods=["POST"])
 def register_user():
     """
@@ -70,8 +62,8 @@ def register_user():
         abort(400)
     return jsonify(db.register_user(register_info))
 
-### INVOICES
 
+### INVOICES
 @app.route("/invoices", methods=['GET'])
 def get_invoices():
     """
@@ -80,7 +72,12 @@ def get_invoices():
     :return: JSON formatted response.
     """
     username = request.args.get('username', "")
+
+    if username == "":
+        return None
+
     return jsonify(db.get_invoice_information(username))
+
 
 @app.route("/invoices/create", methods=['POST'])
 def create_invoice():
