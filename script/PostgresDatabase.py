@@ -432,19 +432,12 @@ class PostgresDatabase(DatabaseInterface):
     def confirm_payment(self, invoice_id: int):
         return "Oopsies"
 
-    def update_status(self, invoice_id: int, status: dict):
+    def update_status(self, invoice_id: int, status: str):
         """Update the status of the invoice with invoice_id.
-
-        Precondition: Only one state of the status is True, and the state that
-        is True should be the only state that is updated.
         """
         cursor = self.connection.cursor()
 
-        for state in status:
-            if status[state]:
-                to_update = state
-
-        cursor.execute(f"""UPDATE Invoices SET {to_update} = NOT {to_update}
+        cursor.execute(f"""UPDATE Invoices SET {status} = NOT {status}
                         WHERE invoiceID = {invoice_id}""")
 
         self.connection.commit()
