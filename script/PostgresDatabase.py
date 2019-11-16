@@ -286,7 +286,7 @@ class PostgresDatabase(DatabaseInterface):
         user_type = cursor.fetchone()
 
         if user_type is None:
-            return {"invoiceFetchStatus": False}
+            return [{"infoRequestStatus": False}]
 
         elif user_type[0] == "Driver":
             cursor.execute("""SELECT * FROM Invoices 
@@ -344,6 +344,7 @@ class PostgresDatabase(DatabaseInterface):
                     "supplierContact": supplier_info[1],
                     "orders": temp_orders,
                     "orderStatus": self.get_status(invoice_id),
+                    "infoRequestStatus": True
                 }
             )
         return final_invoices
@@ -382,7 +383,7 @@ class PostgresDatabase(DatabaseInterface):
         result = cursor.fetchone()
 
         if result is None:
-            return {"userInformation": False}
+            return {"infoRequestStatus": False}
 
         user_type = result[0]
         if user_type == "Driver":
@@ -396,7 +397,8 @@ class PostgresDatabase(DatabaseInterface):
             "name": info[0],
             "contact": info[1],
             "address": info[3] if len(info) > 3 else "N/A",
-            "bankInformation": info[2] if len(info) > 2 else "N/A"
+            "bankInformation": info[2] if len(info) > 2 else "N/A",
+            "infoRequestStatus": True
         }
 
         return dict;

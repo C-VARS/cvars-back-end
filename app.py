@@ -73,9 +73,6 @@ def get_invoices():
     """
     username = request.args.get('username', "")
 
-    if username == "":
-        return None
-
     return jsonify(db.get_invoice_information(username))
 
 
