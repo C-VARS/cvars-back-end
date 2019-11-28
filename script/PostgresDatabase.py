@@ -447,7 +447,8 @@ class PostgresDatabase(DatabaseInterface):
             cursor.execute("""UPDATE Invoices SET arrived = NOT arrived
                             WHERE invoiceID = %s""", (invoice_id,))
         elif status == "payment":
-            cursor.execute("""UPDATE Invoices SET payment = NOT payment
+            cursor.execute("""UPDATE Invoices SET payment = NOT payment, 
+                            completionDate = current_timestamp
                             WHERE invoiceID = %s""", (invoice_id,))
         else:
             return {"updateStatus": False}
