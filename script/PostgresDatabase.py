@@ -363,7 +363,7 @@ class PostgresDatabase(DatabaseInterface):
         """Return a tuple of (name, contact) of the driver with username"""
         cursor = self.connection.cursor()
         if username is None:
-            return "N/A", "N/A"
+            return "N/A", "N/A", "N/A"
 
         cursor.execute("""SELECT name, contact, username FROM Drivers
                             WHERE username = %s""", (username,))
