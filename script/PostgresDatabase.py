@@ -340,6 +340,7 @@ class PostgresDatabase(DatabaseInterface):
                     "customerContact": customer_info[1],
                     "driverName": driver_info[0],
                     "driverContact": driver_info[1],
+                    "driverUsername": driver_info[2],
                     "supplierName": supplier_info[0],
                     "supplierContact": supplier_info[1],
                     "orders": temp_orders,
@@ -364,7 +365,7 @@ class PostgresDatabase(DatabaseInterface):
         if username is None:
             return "N/A", "N/A"
 
-        cursor.execute("""SELECT name, contact FROM Drivers
+        cursor.execute("""SELECT name, contact, username FROM Drivers
                             WHERE username = %s""", (username,))
         return cursor.fetchone()
 
