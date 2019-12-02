@@ -2,7 +2,7 @@ Alex = {
     "userType": "Driver",
     "username": "Alex",
     "password": "alex12345",
-    "contact": "416-874-2017",
+    "contact": "+14373452276",
     "name": "Alexander Yang",
 }
 
@@ -10,7 +10,7 @@ Callum = {
     "userType": "Driver",
     "username": "Callum",
     "password": "callum12345",
-    "contact": "647-298-3784",
+    "contact": "+19025994006",
     "name": "Callum Cassidy Nolan",
 }
 
@@ -18,7 +18,7 @@ Raag = {
     "userType": "Customer",
     "username": "Raag",
     "password": "raag12345",
-    "contact": "416-284-9927",
+    "contact": "+16479691309",
     "name": "Raag Kashyap",
     "bankInformation": "ScotiaRaag",
     "address": "123 Business Street"
@@ -28,7 +28,7 @@ Vlad = {
     "userType": "Customer",
     "username": "Vlad",
     "password": "vlad12345",
-    "contact": "647-234-0499",
+    "contact": "+19057516654",
     "name": "Vladimir Dyagilev",
     "bankInformation": "ScotiaVlad",
     "address": "200 Business Street"
@@ -38,7 +38,7 @@ Sophie = {
     "userType": "Supplier",
     "username": "Sophie",
     "password": "sophie12345",
-    "contact": "905-698-9068",
+    "contact": "+16478218004",
     "name": "Sophie's Cola",
     "bankInformation": "ScotiaSophieCola",
     "address": "990 Business Street"
