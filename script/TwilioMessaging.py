@@ -7,11 +7,11 @@ auth_token = os.environ.get("auth_token", 'None')
 client = Client(account_sid, auth_token)
 
 
-def send_message(messageText, targetNumber):
+def send_message(message_text, target_number):
     message = client.messages \
         .create(
-        body=messageText,
+        body=message_text,
         from_='+12564809033',
-        to=targetNumber
+        to=target_number
     )
     print(message.sid)
