@@ -1,8 +1,11 @@
-from script.Facades.LoginFacade import LoginFacade
+from jinja2.nodes import Dict
+
+from script.Facades.LoginHandlerFacade import LoginHandlerFacade
 
 
-class Login(LoginFacade):
+class LoginHandler(LoginHandlerFacade):
     def __init__(self, connection):
+        super().__init__(connection)
         self.connection = connection
 
     def attempt_login(self, username: str, password: str) -> Dict:

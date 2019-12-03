@@ -1,7 +1,7 @@
 from typing import Optional, Dict
 
 
-class CreateInvoiceFacade:
+class InvoiceCreatorFacade:
     def __init__(self, connection):
         self.connection = connection
 

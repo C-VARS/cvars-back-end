@@ -1,7 +1,7 @@
 from typing import Dict
 
 
-class RegisterUserFacade:
+class UserRegisterFacade:
     def __init__(self, connection):
         self.connection = connection
 
@@ -13,4 +13,4 @@ class RegisterUserFacade:
          :return: A dictionary in the format of {"registerStatus": True/False,
                                                  "errorMessage": "Message"}
          """
-        pass
+        raise NotImplementedError

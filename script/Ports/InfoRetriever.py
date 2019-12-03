@@ -1,9 +1,9 @@
-from script.Facades.InvoiceInfoFacade import InvoiceInfoFacade
+from script.Facades.InfoRetrieverFacade import InfoRetrieverFacade
 
 
-class InvoiceInfo(InvoiceInfoFacade):
+class InfoRetriever(InfoRetrieverFacade):
     def __init__(self, connection):
-        InvoiceInfoFacade.__init__(self, connection)
+        InfoRetrieverFacade.__init__(self, connection)
         self.helpers = _InformationGetters(connection)
 
     def get_invoice_information(self, username: str):
@@ -32,6 +32,29 @@ class InvoiceInfo(InvoiceInfoFacade):
         invoices = cursor.fetchall()
 
         return self.helpers.generate_invoices(invoices, cursor)
+
+    def get_user_information(self, username: str):
+        cursor = self.connection.cursor()
+
+        cursor.execute("""SELECT userType from loginInfo where username = %s""",
+                       (username,))
+        result = cursor.fetchone()
+
+        if result is None:
+            return {"infoRequestStatus": False}
+
+        user_type = result[0]
+        info = self.helpers.get_user_info_as_dict(username, user_type)
+
+        dict = {
+            "name": info[0],
+            "contact": info[1],
+            "address": info[3] if len(info) > 3 else "N/A",
+            "bankInformation": info[2] if len(info) > 2 else "N/A",
+            "infoRequestStatus": True
+        }
+
+        return dict
 
 
 class _InformationGetters:
@@ -85,6 +108,17 @@ class _InformationGetters:
             )
         return final_invoices
 
+    def get_user_info_as_dict(self, username, user_type):
+        info = {}
+        if user_type == "Driver":
+            info = self._get_driver_info(username)
+        elif user_type == "Customer":
+            info = self._get_customer_info(username)
+        elif user_type == "Supplier":
+            info = self._get_supplier_info(username)
+
+        return info
+
     def _get_customer_info(self, username):
         """Return a tuple of (name, address, contact) of the customer with
         username"""
@@ -110,34 +144,6 @@ class _InformationGetters:
         cursor.execute("""SELECT name, contact, bankInformation FROM Suppliers
                             WHERE username = %s""", (username,))
         return cursor.fetchone()
-
-    def _get_user_information(self, username: str):
-        cursor = self.connection.cursor()
-
-        cursor.execute("""SELECT userType from loginInfo where username = %s""",
-                       (username,))
-        result = cursor.fetchone()
-
-        if result is None:
-            return {"infoRequestStatus": False}
-
-        user_type = result[0]
-        if user_type == "Driver":
-            info = self._get_driver_info(username)
-        elif user_type == "Customer":
-            info = self._get_customer_info(username)
-        elif user_type == "Supplier":
-            info = self._get_supplier_info(username)
-
-        dict = {
-            "name": info[0],
-            "contact": info[1],
-            "address": info[3] if len(info) > 3 else "N/A",
-            "bankInformation": info[2] if len(info) > 2 else "N/A",
-            "infoRequestStatus": True
-        }
-
-        return dict
 
     def _get_status(self, invoice_id: int):
         """ Return a JSON file containing the status of the invoice with

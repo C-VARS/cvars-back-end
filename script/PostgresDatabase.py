@@ -4,15 +4,14 @@ from typing import Dict
 from script import PresetInformation
 from script.DatabaseInitializer import DatabaseInitializer
 from script.DatabaseInterface import DatabaseInterface
-from script import TwilioMessaging
 
 import psycopg2
 
-from script.Facades.CreateInvoiceFacade import CreateInvoiceFacade
-from script.Facades.InvoiceInfoFacade import InvoiceInfoFacade
-from script.Facades.LoginFacade import LoginFacade
-from script.Facades.RegisterUserFacade import RegisterUserFacade
-from script.Facades.UpdateStatusFacade import UpdateStatusFacade
+from script.Ports.InvoiceCreator import InvoiceCreator
+from script.Ports.InfoRetriever import InfoRetriever
+from script.Ports.LoginHandler import LoginHandler
+from script.Ports.UserRegister import UserRegister
+from script.Ports.StatusUpdater import StatusUpdater
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "None")
 
@@ -40,11 +39,11 @@ class PostgresDatabase(DatabaseInterface):
                 self.connection = psycopg2.connect(DATABASE_URL,
                                                    sslmode='require')
             # initialize the db
-            self.createInvoice = CreateInvoiceFacade(self.connection)
-            self.registerUser = RegisterUserFacade(self.connection)
-            self.invoiceInfo = InvoiceInfoFacade(self.connection)
-            self.login = LoginFacade(self.connection)
-            self.updateStatus = UpdateStatusFacade(self.connection)
+            self.invoice_creator = InvoiceCreator(self.connection)
+            self.user_register = UserRegister(self.connection)
+            self.info_retriever = InfoRetriever(self.connection)
+            self.login_handler = LoginHandler(self.connection)
+            self.status_updater = StatusUpdater(self.connection)
             self._initialize()
         except psycopg2.OperationalError as e:
             print("Something happened rip" + e.pgerror)
@@ -53,7 +52,7 @@ class PostgresDatabase(DatabaseInterface):
         """ Create a new invoice in the database. Return a Dict representing
         the success of the new invoice creation.
         """
-        return self.createInvoice.create_invoice(invoice_info)
+        return self.invoice_creator.create_invoice(invoice_info)
 
     def register_user(self, user_info) -> Dict:
         """
@@ -63,13 +62,21 @@ class PostgresDatabase(DatabaseInterface):
          :return: A dictionary in the format of {"registerStatus": True/False,
                                                  "errorMessage": "Message"}
          """
-        return self.registerUser.register_user(user_info)
+        return self.user_register.register_user(user_info)
+
+    def get_user_information(self, username: str):
+        """
+        Return a dictionary of a given user's information
+        :param username: the user's username
+        :return: Dictionary object containing the user's relevant information
+        """
+        return self.info_retriever.get_user_information(username)
 
     def get_invoice_information(self, username: str):
         """Return the information that would show up on the invoice of a user
         with <username>. """
 
-        return self.invoiceInfo.get_invoice_information(username)
+        return self.info_retriever.get_invoice_information(username)
 
     def attempt_login(self, username: str, password: str) -> Dict:
         """
@@ -80,49 +87,12 @@ class PostgresDatabase(DatabaseInterface):
                                                 "userType":"Driver"/"Customer"
                                                 /"Supplier"}
         """
-        return self.login.attempt_login(username, password)
+        return self.login_handler.attempt_login(username, password)
 
     def update_status(self, invoice_id: int, status: str):
         """Update the status of the invoice with invoice_id.
         """
-        self.updateStatus.update_status(invoice_id, status)
-
-    def _send_message(self, contact, invoice_id, status):
-        if status == "onTheWay":
-            message = "ScotiaTracker Reminder: Invoice #" + invoice_id +\
-                      " is on its way!"
-            TwilioMessaging.send_message(message, contact['customer'])
-        elif status == "arrived":
-            message = "ScotiaTracker Reminder: Invoice #" + invoice_id +\
-                      " delivery has arrived!"
-            TwilioMessaging.send_message(message, contact['customer'])
-        elif status == "payment":
-            message = "ScotiaTracker Reminder: Invoice #" + invoice_id +\
-                      " has been paid!"
-            TwilioMessaging.send_message(message, contact['driver'])
-
-    def _find_contact_by_invoice(self, invoice_id: int):
-        cursor = self.connection.cursor()
-
-        cursor.execute("""SELECT customerUsername, driverUsername, supplierUsername
-        from Invoices where invoiceID = %s""", (invoice_id,))
-
-        result = cursor.fetchone()
-
-        cursor.execute("""SELECT contact from Customers where username = %s""",
-                       (result[0],))
-        customer_contact = cursor.fetchone()[0]
-
-        cursor.execute("""SELECT contact from Drivers where username = %s""",
-                       (result[1],))
-        driver_contact = cursor.fetchone()[0]
-
-        cursor.execute("""SELECT contact from Suppliers where username = %s""",
-                       (result[2],))
-        supplier_contact = cursor.fetchone()[0]
-
-        return {"customer": customer_contact, "driver": driver_contact,
-                "supplier": supplier_contact}
+        return self.status_updater.update_status(invoice_id, status)
 
     def _initialize(self) -> None:
         """

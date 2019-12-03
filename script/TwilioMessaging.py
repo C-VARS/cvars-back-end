@@ -8,10 +8,4 @@ client = Client(account_sid, auth_token)
 
 
 def send_message(messageText, targetNumber):
-    message = client.messages \
-        .create(
-        body=messageText,
-        from_='+12564809033',
-        to=targetNumber
-    )
-    print(message.sid)
+    return 1

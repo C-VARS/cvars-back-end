@@ -1,12 +1,10 @@
 from flask import Flask, request, jsonify, abort
 from script import PostgresDatabase
-from script.FirebaseSender import FirebaseSender
 
 import re
 
 app = Flask(__name__)
 db = PostgresDatabase.PostgresDatabase()
-fb = FirebaseSender()
 
 """
 This file is the root of the Flask server program. Variable "app" is the WSGI
@@ -103,9 +101,6 @@ def update_status():
     """
     invoice_id = request.args.get('invoiceID', "")
     field = request.args.get('status', "")
-
-    msg = "Invoice No." + invoice_id + " status has been updated"
-    fb.send_message_to_topic(msg, invoice_id)
 
     return jsonify(db.update_status(invoice_id, field))
 

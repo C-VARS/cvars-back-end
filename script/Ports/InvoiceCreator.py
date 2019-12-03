@@ -1,10 +1,10 @@
 from typing import Optional, Dict
-from script.Facades.CreateInvoiceFacade import CreateInvoiceFacade
+from script.Facades.InvoiceCreatorFacade import InvoiceCreatorFacade
 
 
-class CreateInvoice(CreateInvoiceFacade):
+class InvoiceCreator(InvoiceCreatorFacade):
     def __init__(self, connection):
-        CreateInvoiceFacade.__init__(self, connection)
+        InvoiceCreatorFacade.__init__(self, connection)
 
     def create_invoice(self, invoice_info) -> Dict:
         valid_status = self._check_valid_invoice_input(invoice_info)

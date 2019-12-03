@@ -1,10 +1,10 @@
 from typing import Optional, Dict
-from script.Facades.RegisterUserFacade import RegisterUserFacade
+from script.Facades.UserRegisterFacade import UserRegisterFacade
 
 
-class RegisterUser(RegisterUserFacade):
+class UserRegister(UserRegisterFacade):
     def __init__(self, connection):
-        RegisterUserFacade.__init__(self, connection)
+        super().__init__(connection)
 
     def register_user(self, user_info) -> Dict:
         """
