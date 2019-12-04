@@ -34,7 +34,10 @@ class StatusUpdater(StatusUpdaterFacade):
         msg = "Invoice No." + invoice_id + " status has been updated"
         self.fb.send_message_to_topic(msg, invoice_id)
 
-        self._send_text_message(contact, invoice_id, status)
+        try:
+            self._send_text_message(contact, invoice_id, status)
+        except Exception as e:
+            print("Twilio messaging error!")
 
         return {"updateStatus": True}
 
