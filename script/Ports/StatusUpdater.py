@@ -31,10 +31,10 @@ class StatusUpdater(StatusUpdaterFacade):
 
         contact = self._find_contact_by_invoice(invoice_id)
 
-        self._send_text_message(contact, invoice_id, status)
-
         msg = "Invoice No." + invoice_id + " status has been updated"
         self.fb.send_message_to_topic(msg, invoice_id)
+
+        self._send_text_message(contact, invoice_id, status)
 
         return {"updateStatus": True}
 
