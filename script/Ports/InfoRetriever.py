@@ -103,8 +103,7 @@ class _InformationGetters:
                     "supplierName": supplier_info[0],
                     "supplierContact": supplier_info[1],
                     "orders": temp_orders,
-                    "orderStatus": self._get_status(invoice_id),
-                    "infoRequestStatus": True
+                    "orderStatus": self._get_status(invoice_id)
                 }
             )
         return final_invoices
