@@ -16,7 +16,7 @@ class InfoRetriever(InfoRetrieverFacade):
         user_type = cursor.fetchone()
 
         if user_type is None:
-            return [{"infoRequestStatus": False}]
+            return {"infoRequestStatus": False}
 
         elif user_type[0] == "Driver":
             cursor.execute("""SELECT * FROM Invoices 
@@ -31,7 +31,8 @@ class InfoRetriever(InfoRetrieverFacade):
                             WHERE customerUsername = %s""", (username,))
         invoices = cursor.fetchall()
 
-        return self.helpers.generate_invoices(invoices, cursor)
+        return {"infoRequestStatus": True,
+                "invoices": self.helpers.generate_invoices(invoices, cursor)}
 
     def get_user_information(self, username: str):
         cursor = self.connection.cursor()
